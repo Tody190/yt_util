@@ -2,6 +2,7 @@
 __author__ = "yangtao"
 
 import os
+import sys
 import ast
 import configparser
 
@@ -9,8 +10,12 @@ import configparser
 
 
 class Config:
-    def __init__(self, config_file):
-        self.config_file = config_file
+    def __init__(self, config_file=None):
+        if config_file:
+            self.config_file = config_file
+        else:
+            self.config_file = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])),
+                                            "config.ini")
         self.config = configparser.ConfigParser()
         if not os.path.exists(self.config_file):
             open(self.config_file, 'w')
@@ -21,10 +26,16 @@ class Config:
             if not self.config.has_section(section):
                 self.config.add_section(section)
             if option:
-                if not value:
-                    value = ""
-                else:
+                try:
                     value = str(value)
+                except:
+                    value = ""
+                # if isinstance(bool, value):
+                #     value = str(value)
+                # elif not value:
+                #     value = ""
+                # else:
+                #     value = str(value)
                 self.config.set(section, option, value)
         # write
         with open(self.config_file, 'w') as f:
@@ -37,6 +48,7 @@ class Config:
             return node_or_string
 
     def get(self, section: str=None, option: str=None):
+        self.config.read(self.config_file)
         if section:
             if option:
                 return self.__literal_eval(self.config.get(section, option, fallback=None))
